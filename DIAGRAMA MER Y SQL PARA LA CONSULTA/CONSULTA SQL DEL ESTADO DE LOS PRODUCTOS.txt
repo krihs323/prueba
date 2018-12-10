@@ -1,0 +1,26 @@
+select 
+t.id, 
+t.producto, 
+(t.stock + cantidad_compra - cantidad_venta) as stock_real, 
+t.valor_total_egreso, 
+t.valor_total_ingreso, 
+(t.valor_total_ingreso-t.valor_total_egreso) as total_ganancias
+from (
+    SELECT 
+    p.id, 
+    p.producto, 
+    p.stock, 
+    ( select (sum(cantidad) * valor_compra_unitaria) from compra where id_producto = p.id 
+        AND fecha < now() GROUP by id_producto ) as valor_total_egreso, 
+    ( select (sum(cantidad) * valor_venta_unitaria) from venta where id_producto = p.id 
+        AND fecha < now() GROUP by id_producto ) as valor_total_ingreso,
+	( select (sum(cantidad)) from compra where id_producto = p.id 
+        AND fecha < now() GROUP by id_producto ) as cantidad_compra,
+	 ( select (sum(cantidad)) from venta where id_producto = p.id 
+        AND fecha < now() GROUP by id_producto ) as cantidad_venta
+    FROM productos as p
+) as t
+
+
+
+
